@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800&display=swap'); */
+body {
+  background-color: #111111;
+  font-family: 'Inter', sans-serif;
+  padding: 20px;
+  /* Other styles */
+}
+/* Define the animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30%); /* Initially push the element down */
+  transition: transform 0.5s ease; 
+    /* Add any other initial styles for the animation */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    /* Add any other final styles for the animation */
+  }
+}
+
+/* Apply the animation to the element */
+.animate-in {
+  animation: fadeIn 1s ease-in-out;
+  /* Change '1s' to match the duration you set in the React component */
+}
+.animate-ins {
+  animation: fadeIn 2s ease-in-out;
+  /* Change '1s' to match the duration you set in the React component */
+}
+@media (min-width: 645px) {
+  /* Add padding when the viewport width is 645px or more */
+  /* Adjust the values according to your design requirements */
+  .your-container-class {
+    padding: 20px; /* Add your desired padding value */
+  }
+}
