@@ -1,15 +1,55 @@
 'use client'
 import React, { useState,useEffect } from 'react';
+import { useRouter } from 'next/navigation'
+// import { useNavigate } from 'react-router-dom'
+import {auth} from './utilis/authProvider';
 import Header from './component/ui/headers';
 import Arrow from './component/assets/Arrow';
-import Link from 'next/link';
 import Image from 'next/image'
 import profilePic from './component/assets/21.png'
 
 export default function Home() {
+  
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [animate, setAnimate] = useState(false);
+  const router = useRouter();
+  const handleLogin = async () => {
+    try {
+      const provider = await auth.connect();
+      router.push('/dashboard');
+      console.log('Successfully logged in with');
+    } catch (error) {
+      // Handle login errors
+      console.error('Login failed:', error);
+    }
+  };
 
+  // const router = useRouter();
+  // useEffect(() => {
+  //   const checkLoginStatus = async () => {
+  //     try {
+  //       const isLoggedIn = await auth.isLoggedIn();
+  //       if (isLoggedIn) {
+  //         router.push('/dashboard');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error checking login status:', error);
+  //     }
+  //   };
+
+  //   checkLoginStatus();
+  // }, [router]);
+ 
+ 
+ 
+  // useEffect(() => {
+  //   // Prefetch the dashboard page
+  //   router.prefetch('/dashboard')
+  // }, [router])
+
+  
+ 
+   
   useEffect(() => {
     // Set animate to true when the component mounts or refreshes
     setAnimate(true);
@@ -71,9 +111,9 @@ export default function Home() {
       ))}
       
     </div>
-    <Link href="/dashboard" >
-    <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'>Get started <Arrow/></div>
-    </Link>
+    
+    <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins' onClick={handleLogin}>Get started <Arrow/></div>
+   
         </div>
         
        <div>

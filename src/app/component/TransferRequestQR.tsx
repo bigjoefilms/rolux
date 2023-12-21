@@ -1,7 +1,7 @@
-import { createQR, encodeURL, TransferRequestURLFields } from "@solana/pay";
+import { createQR, encodeURL, TransferRequestURLFields } from '@solana/pay';
 import { Keypair, PublicKey } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
-import { FC, useEffect, useRef,useState } from "react";
+import { FC, useEffect, useRef} from "react";
 
 type TransferRequestQRProps = {
   reference: PublicKey,

@@ -1,13 +1,18 @@
+'use client'
 import Link from 'next/link'
 import React,{useState} from 'react'
 import Image from 'next/image'
 import profilePic from '../assets/21.png'
 
-const headers = () => {
+
+const Headers = () => {
   const [open,isOpen]= useState(false)
+
+
 
   function openUp(){
     isOpen(!open)
+
 
   }
       return (
@@ -33,12 +38,13 @@ const headers = () => {
         </ul>
         <div className='hidden px-4 py-2 rounded-lg text-sm cursor-pointer text-[#b4b4b4] relative max-sm:flex'>
           
-          <p onClick={openUp}>Menu</p>{ open &&
+          <p onClick={openUp}>Menu</p>
+          { open &&
           <div>
             
 
       
-          <ul className='flex text-[#b4b4b4] flex-col bg-[#2e2e2e] rounded-[10px] absolute left-0 top-[30px] animate-in'>
+          <ul className='flex text-[#b4b4b4] flex-col bg-[#2e2e2e] rounded-[10px] absolute left-0 top-[30px] animate-in px-[10px]'>
             <li className='flex px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-[#22222]'>About</li>
             <li className='flex px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-[#22222]'>Blog</li>
             <li className='flex px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-[#22222]'>Contact-us</li>
@@ -51,4 +57,4 @@ const headers = () => {
   )
 }
 
-export default headers
+export default Headers

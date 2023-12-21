@@ -1,10 +1,9 @@
 'use client'
 import React, { useState,useEffect,useMemo } from 'react';
 import Header from '../component/ui/headers';
-import Head from "next/head";
-import Image from "next/image";
+import { useRouter } from 'next/navigation'
+import {auth} from '../utilis/authProvider';
 import BigNumber from "bignumber.js";
-import Link from "next/link";
 import { TransferRequestQR } from "../component/TransferRequestQR";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
@@ -20,9 +19,9 @@ import {
 } from "@solana/web3.js";
 import {
   WalletModalProvider,
-  WalletDisconnectButton,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
+import Image from 'next/image';
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -30,7 +29,7 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 
 
 
-const page = () => {
+const Page = () => {
   const [animate, setAnimate] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState<BigNumber>();
@@ -48,6 +47,17 @@ const page = () => {
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
   const wallets = useMemo(() => [new PhantomWalletAdapter()], [network]);
+  const router = useRouter();
+  const logOut = async () => {
+    try {
+      const provider = await auth.logout();
+      router.push('/');
+      console.log('Successfully logged in with');
+    } catch (error) {
+      // Handle login errors
+      console.error('Login failed:', error);
+    }
+  };
 
   const handleShowQRClick = () => {
     setIsQRVisible(true);
@@ -66,17 +76,19 @@ const page = () => {
     setIsQRVisible(false);
     setVerificationStatus(false);
   };
+  useEffect(() => {
+    const redirectUser = async () => {
+      const isloggedIn = await auth.isLoggedIn() // boolean
+      if (!isloggedIn) {
+        
+        router.push('/');
+      }
+    };
+
+    redirectUser();
+  }, []);
   
 
-
-  const setBack = () => {
-    setVerificationStatus(false);
-  };
- 
-  function truncate(number: any, places: any) {
-    return Math.trunc(number * 10 ** places) / 10 ** places;
-  }
- 
   useEffect(() => {
     async function connectWallet() {
       try {
@@ -142,36 +154,36 @@ const page = () => {
     return () => clearTimeout(timeout);
   }, []);
 
-  useEffect(() => {
-    if (walletAddress !== null) {
-      const fetchBalance = async () => {
-        try {
-          let newBalance = await SOLANA_CONNECTION.getBalance(
-            new PublicKey(walletAddress)
-          );
-          newBalance = newBalance / LAMPORTS_PER_SOL;
+  // useEffect(() => {
+  //   if (walletAddress !== null) {
+  //     const fetchBalance = async () => {
+  //       try {
+  //         let newBalance = await SOLANA_CONNECTION.getBalance(
+  //           new PublicKey(walletAddress)
+  //         );
+  //         newBalance = newBalance / LAMPORTS_PER_SOL;
 
-          if (balance !== null && newBalance !== balance) {
+  //         if (balance !== null && newBalance !== balance) {
            
-            alert(`Transaction confirmed: ${newBalance}`);
+  //           alert(`Transaction confirmed: ${newBalance}`);
 
            
-          }
+  //         }
         
-          setBalance(newBalance);
-          console.log(`Wallet Balance: ${newBalance}`);
+  //         setBalance(newBalance);
+  //         console.log(`Wallet Balance: ${newBalance}`);
 
          
-        } catch (error) {
-          console.error("Error fetching balance:", error);
-        }
-      };
+  //       } catch (error) {
+  //         console.error("Error fetching balance:", error);
+  //       }
+  //     };
      
-      fetchBalance();
-      const intervalId = setInterval(fetchBalance, 1000);
-      return () => clearInterval(intervalId);
-    }
-  }, [walletAddress, balance]);
+  //     // fetchBalance();
+  //     const intervalId = setInterval(fetchBalance, 1000);
+  //     return () => clearInterval(intervalId);
+  //   }
+  // }, [walletAddress, balance]);
   
 
   useEffect(() => {
@@ -284,6 +296,8 @@ const page = () => {
                     )}
                   </div>
                   <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'   onClick={goToDashboard}> Go to Dashboard <Arrow/> </div>
+                  <div className='text-[#b54242]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'   onClick={logOut}>Logout <Arrow/> </div>
+
 
               
                 
@@ -309,25 +323,116 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
 type GoToPageFunction = () => void;
 
+interface UserInfo {
+  id: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+  address: string;
+  publicKey: string;
+}
  function Dashboard ({ goToPage, balance }: { goToPage: GoToPageFunction; balance: number | null }) {
+  const [user, setUser] = useState<UserInfo | null>(null);
+
+  const getUserInfo = async () => {
+    try {
+     
+      await auth.init();
+      const info = await auth.getUser();
+      return info;
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      return null;
+    }
+  };
+  
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const user = await getUserInfo();
+      setUser(user);
+    };
+
+    fetchUserInfo();
+  }, []);
   return(
     <div>
-       <div className='flex justify-between items-center  flex-col  dashbaord' >
-                     <h1 className='text-[#eeeeee] font-bold text-[24px] leading-6 animate-ins '>Dashboard</h1>
+      {user ? (  <div className='flex justify-between items-center  flex-col  dashbaord' >
+      
+  
+               <h1 className='text-[#eeeeee] font-bold text-[24px] leading-6 animate-ins flex items-center gap-10'>Dashboard
+                     <div >
+                     <Image
+  src={user?.picture || '-'}
+  alt="Picture of the author"
+  width={40}
+  className='rounded-full'
+  height={40}
+/>
+                     </div>
+                     </h1>
+                     <div className='flex items-center  gap-4 max-md:flex-col'>
+                     <div className='mt-[40px] flex gap-5 animate-in '>
+                       <div className='max-w-[350px] w-full h-[100px] rounded-[10px] bg-[#222222] text-[#eeee] px-[30px] flex flex-col items-start justify-center'>
+                        <p className='font-bold text-[24px]'>Name</p>
+                        {user.name || '-'} </div>
+                      
+                     </div>
+                     <div className='mt-[40px] flex gap-5 animate-in '>
+                       <div className='max-w-[350px] w-full h-[100px] rounded-[10px] bg-[#222222] text-[#eeee] px-[30px] flex flex-col items-start justify-center'>
+                        <p className='font-bold text-[24px]'>Email</p>
+                        {user.email || '-'} </div>
+                      
+                     </div>
+
+                     </div>
+                     <div className='flex items-center gap-4 max-md:flex-col'>
+                     <div className='mt-[40px] flex gap-5 animate-in '>
+                       <div className='max-w-[350px] w-full h-[100px] rounded-[10px] bg-[#222222] text-[#eeee] px-[30px] flex flex-col items-start justify-center'>
+                        <p className='font-bold text-[24px]'>  User ID</p>
+                       {user.id} </div>
+                      
+                     </div>
+                     <div className='mt-[40px] flex gap-5 animate-in max-md:flex-col '>
+                       <div className='max-w-[350px] w-full h-[100px] rounded-[10px] bg-[#222222] text-[#eeee] px-[30px] flex flex-col items-start justify-center'>
+                        <p className='font-bold text-[24px]'>Address</p>
+                        {user ? `${user.publicKey.slice(0, 20)}...` : ''} </div>
+                      
+                     </div>
+
+
+                     </div>
+                     <div className='flex items-center gap-4 max-md:flex-col'>
+                     <div className='mt-[40px] flex gap-5 animate-in '>
+                       <div className='max-w-[350px] w-full h-[100px] rounded-[10px] bg-[#222222] text-[#eeee] px-[30px] flex flex-col items-start justify-center'>
+                        <p className='font-bold text-[24px]'>Address</p>
+                        {user ? `${user.address.slice(0, 20)}...` : ''} </div>
+                      
+                     </div>
                      <div className='mt-[40px] flex gap-5 animate-in '>
                        <div className='max-w-[350px] w-full h-[100px] rounded-[10px] bg-[#222222] text-[#eeee] px-[30px] flex flex-col items-start justify-center'>
                         <p className='font-bold text-[24px]'>Account balance</p>
                         {balance} : sol</div>
                       
                      </div>
+
+
+                     </div>
+                    
+                    
+                    
+                    
                      
                      
                  <div  className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins' onClick={goToPage}>Scan to pay <Arrow/></div>
                 
                      </div>
+                     ) : (
+                      <p className='text-[#eeee] text-[24px]'>Loading user information...</p>
+                    )}
+                         
 
     </div>
 
