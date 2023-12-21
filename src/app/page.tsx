@@ -13,14 +13,21 @@ export default function Home() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [animate, setAnimate] = useState(false);
   const router = useRouter();
+  const [state, setState] = useState(false)
   const handleLogin = async () => {
     try {
-      const provider = await auth.connect();
+      setState(true);
+      await auth.init()
+        const provider = await auth.connect();
+
+      
       router.push('/dashboard');
       console.log('Successfully logged in with');
     } catch (error) {
       // Handle login errors
       console.error('Login failed:', error);
+    }finally {
+      setState(false); // Set loading state to false when login process ends
     }
   };
 
@@ -112,7 +119,15 @@ export default function Home() {
       
     </div>
     
-    <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins' onClick={handleLogin}>Get started <Arrow/></div>
+    <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins' onClick={handleLogin}>
+    {state ? (
+    <div className="spinner-container">
+      <div className="spinner"></div>
+    </div>
+  ) : (
+    "Get Started"
+  )}
+       <Arrow/></div>
    
         </div>
         

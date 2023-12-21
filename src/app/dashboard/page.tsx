@@ -40,6 +40,7 @@ const Page = () => {
   const reference = useMemo(() => Keypair.generate().publicKey, []);
   const [isQRVisible, setIsQRVisible] = useState(false);
   const [dashboardVisible, setDashboardVisible] = useState(false);
+  const [state, setState] = useState(false)
   const QUICKNODE_RPC =
     "https://few-cool-water.solana-devnet.discover.quiknode.pro/34694b75986a1c86677328b2f079135fbc1a538c/";
   const SOLANA_CONNECTION = new Connection(QUICKNODE_RPC);
@@ -50,12 +51,15 @@ const Page = () => {
   const router = useRouter();
   const logOut = async () => {
     try {
-      const provider = await auth.logout();
+      setState(true);
+      await auth.logout();
       router.push('/');
       console.log('Successfully logged in with');
     } catch (error) {
       // Handle login errors
       console.error('Login failed:', error);
+    }finally {
+      setState(false); // Set loading state to false when login process ends
     }
   };
 
@@ -65,10 +69,12 @@ const Page = () => {
 
 
   const goToDashboard = () => {
+    setState(true);
     setDashboardVisible(true);
   };
 
   const goToPage = () => {
+    setState(false);
     setDashboardVisible(false);
   };
  
@@ -78,13 +84,13 @@ const Page = () => {
   };
   useEffect(() => {
     const redirectUser = async () => {
-      const isloggedIn = await auth.isLoggedIn() // boolean
+      await auth.init();
+      const isloggedIn = await auth.isLoggedIn(); // boolean
       if (!isloggedIn) {
-        
-        router.push('/');
+        router.push('/');// Redirect to 'use client' page
       }
     };
-
+  
     redirectUser();
   }, []);
   
@@ -295,8 +301,23 @@ const Page = () => {
                       </button>
                     )}
                   </div>
-                  <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'   onClick={goToDashboard}> Go to Dashboard <Arrow/> </div>
-                  <div className='text-[#b54242]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'   onClick={logOut}>Logout <Arrow/> </div>
+                  <div className='text-[#eeeeee]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'   onClick={goToDashboard}> 
+                  {state ? (
+    <div className="spinner-container">
+      <div className="spinner"></div>
+    </div>
+  ) : (
+    " Go to Dashboard"
+  )}
+                  <Arrow/> </div>
+                  <div className='text-[#b54242]  bg-[#222222] h-[40px] rounded-[10px] cursor-pointer items-center flex px-3 text-[14px] mt-[25px] w-[300px] justify-center hover:bg-[#2a2a2a] animate-ins'   onClick={logOut}>
+                  {state ? (
+    <div className="spinner-container">
+      <div className="spinner"></div>
+    </div>
+  ) : (
+    "Logout"
+  )} <Arrow/> </div>
 
 
               
@@ -430,7 +451,7 @@ interface UserInfo {
                 
                      </div>
                      ) : (
-                      <p className='text-[#eeee] text-[24px]'>Loading user information...</p>
+                      <p className='spinners'></p>
                     )}
                          
 
